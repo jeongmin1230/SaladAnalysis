@@ -1,8 +1,12 @@
 <resources>
     <string name="app_name">Salad Analysis</string>
-    <string name="main_info">샐러드 사진을 업로드 하면 구성 요소를 분석 합니다.</string>
+    <string name="main_info">샐러드 사진을 업로드 하면 구성 요소를 분석 합니다.\n?를 선택 하면 사진을 가져 올 수 있습니다.</string>
     <string name="image_upload">이미지 업로드</string>
     <string name="original">[ 원본 ]</string>
     <string name="question_mark">question mark</string>
-    <string name="analyze">분석</string>
+    <string name="result">사진 가져 오기</string>
+    <string name="analyze">[ 분석 ]</string>
+    <string name="select_image_type">사진 유형 선택</string>
+    <string name="camera">촬영</string>
+    <string name="gallery">이미지</string>
 </resources>
