@@ -1,8 +1,8 @@
 package com.example.saladanalysis
 
 import PictureTypeRow
+import ShowImage
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -28,10 +28,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -48,7 +46,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.example.saladanalysis.ui.theme.SaladAnalysisTheme
 
 class MainActivity : ComponentActivity() {
-    private var image: Uri? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -67,36 +64,35 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
-    var selectImage by remember { mutableStateOf(false) }
+    val selectImage = remember { mutableStateOf(false) }
 
     val cameraResult = remember { mutableStateOf<ImageBitmap?>(null) }
-    val galleryResult = remember { mutableStateOf<Uri?>(null) }
-
     val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) { bitmap: Bitmap? ->  cameraResult.value = bitmap?.asImageBitmap() }
+
+    val galleryResult = remember { mutableStateOf<Uri?>(null) }
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? -> galleryResult.value = uri }
-    val uriImage = remember { mutableStateOf<Uri?>(null) }
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = stringResource(id = R.string.main_info),
             style = MaterialTheme.typography.bodyLarge.copy(color = Color.Black, textAlign = TextAlign.Center),
             modifier = Modifier.padding(bottom = 10.dp)
         )
-        if(selectImage) {
+        if(selectImage.value) {
             AlertDialog(
-                onDismissRequest = { selectImage = false },
+                onDismissRequest = { selectImage.value = false },
                 containerColor = Color.White,
                 confirmButton = {
                     Column(Modifier.fillMaxWidth()) {
                         PictureTypeRow(PaddingValues(bottom = 12.dp), ImageVector.vectorResource(R.drawable.ic_camera), stringResource(R.string.camera)) {
                             cameraResult.value = null
                             galleryResult.value = null
-                            selectImage = false
+                            selectImage.value = false
                             cameraLauncher.launch()
                         }
                         PictureTypeRow(PaddingValues(top = 12.dp), ImageVector.vectorResource(R.drawable.ic_gallery), stringResource(R.string.gallery)) {
                             cameraResult.value = null
                             galleryResult.value = null
-                            selectImage = false
+                            selectImage.value = false
                             galleryLauncher.launch("image/*")
                         }
                     }
@@ -129,47 +125,15 @@ fun MainScreen() {
                             .clickable(
                                 indication = null,
                                 interactionSource = MutableInteractionSource()
-                            ) { selectImage = !selectImage }
+                            ) { selectImage.value = !selectImage.value }
                             .fillMaxSize()
                     )
                 }
             } else if(cameraResult.value != null){
-                Box(modifier = Modifier
-                    .size(width = 400.dp, height = 200.dp)
-                    .border(BorderStroke(1.dp, Color.DarkGray))
-                ) {
-                    Image(
-                        bitmap = cameraResult.value!!,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .clickable(
-                                indication = null,
-                                interactionSource = MutableInteractionSource()
-                            ) { selectImage = !selectImage }
-                            .fillMaxSize()
-                    )
-                }
+                ShowImage(cameraResult.value, selectImage)
             }
             else if(galleryResult.value != null) {
-                println("in else if ")
-                galleryResult.value?.let {
-                    Box(modifier = Modifier
-                        .size(width = 400.dp, height = 200.dp)
-                        .border(BorderStroke(1.dp, Color.DarkGray))
-                    ) {
-                        Image(
-                            bitmap = BitmapFactory.decodeStream(LocalContext.current.contentResolver.openInputStream(it)).asImageBitmap(),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .clickable(
-                                    indication = null,
-                                    interactionSource = MutableInteractionSource()
-                                ) { selectImage = !selectImage }
-                                .fillMaxSize()
-                        )
-                    }
-                }
-
+                ShowImage(loadImageFromUri(LocalContext.current, galleryResult.value), selectImage)
             }
         }
     }
