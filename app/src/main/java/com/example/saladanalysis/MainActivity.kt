@@ -2,6 +2,7 @@ package com.example.saladanalysis
 
 import PictureTypeRow
 import ShowImage
+import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
@@ -18,10 +19,14 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -62,6 +67,7 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@SuppressLint("UnrememberedMutableState")
 @Composable
 fun MainScreen() {
     val selectImage = remember { mutableStateOf(false) }
@@ -112,7 +118,10 @@ fun MainScreen() {
                 galleryResult.value = gallery
             }
         }
-        Column(Modifier.padding(horizontal = 10.dp)) {
+        Column(modifier = Modifier
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 10.dp)) {
+            val context = LocalContext.current
             if(cameraResult.value == null && galleryResult.value == null) {
                 Box(modifier = Modifier
                     .size(width = 400.dp, height = 200.dp)
@@ -130,10 +139,42 @@ fun MainScreen() {
                     )
                 }
             } else if(cameraResult.value != null){
-                ShowImage(cameraResult.value, selectImage)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    ShowImage(cameraResult.value, selectImage)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    if(runObjectDetection(context, cameraResult.value).isNotEmpty()) {
+                        runObjectDetection(context, cameraResult.value).forEach {
+                            Text(text = it.text)
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.no_result),
+                            style = MaterialTheme.typography.bodyLarge.copy(Color.Black)
+                            )
+                    }
+                }
             }
             else if(galleryResult.value != null) {
-                ShowImage(loadImageFromUri(LocalContext.current, galleryResult.value), selectImage)
+                val mutableUriToImageBitmap = mutableStateOf(loadImageFromUri(context, galleryResult.value))
+                val objectDetectionResults = runObjectDetection(context, mutableUriToImageBitmap.value)
+
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    ShowImage(loadImageFromUri(LocalContext.current, galleryResult.value), selectImage)
+                    Spacer(modifier = Modifier.height(10.dp))
+                    if(objectDetectionResults.isNotEmpty()) {
+                        val distinctResults = objectDetectionResults.distinct()
+                        println(distinctResults)
+                        distinctResults.forEach { 
+                            Text(text = it.text)
+                        }
+
+                    } else {
+                        Text(
+                            text = stringResource(id = R.string.no_result),
+                            style = MaterialTheme.typography.bodyLarge.copy(Color.Black)
+                        )
+                    }
+                }
             }
         }
     }
