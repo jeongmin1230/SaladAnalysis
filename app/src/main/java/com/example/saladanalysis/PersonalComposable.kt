@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,4 +59,13 @@ fun ShowImage(image: ImageBitmap?, selectImage: MutableState<Boolean>) {
                 .fillMaxSize()
         )
     }
+}
+
+@Composable
+fun ShowComponent(component: String) {
+    Text(
+        text = component,
+        style = MaterialTheme.typography.bodyMedium.copy(Color.Black),
+        modifier = Modifier.wrapContentSize()
+    )
 }

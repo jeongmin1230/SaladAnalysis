@@ -10,4 +10,5 @@
     <string name="camera">촬영</string>
     <string name="gallery">이미지</string>
     <string name="no_result">분석 결과가 없습니다.</string>
+    <string name="component_result">[구성 요소]</string>
 </resources>

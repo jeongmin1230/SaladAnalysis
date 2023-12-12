@@ -1,6 +1,7 @@
 package com.example.saladanalysis
 
 import PictureTypeRow
+import ShowComponent
 import ShowImage
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
@@ -139,12 +140,18 @@ fun MainScreen() {
                     )
                 }
             } else if(cameraResult.value != null){
+                val objectDetectionResults = runObjectDetection(context, cameraResult.value)
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ShowImage(cameraResult.value, selectImage)
                     Spacer(modifier = Modifier.height(10.dp))
-                    if(runObjectDetection(context, cameraResult.value).isNotEmpty()) {
-                        runObjectDetection(context, cameraResult.value).forEach {
-                            Text(text = it.text)
+                    if(objectDetectionResults.isNotEmpty()) {
+                        val distinctResults = objectDetectionResults.groupBy { it.text }
+                        Text(
+                            text = stringResource(id = R.string.component_result),
+                            style = MaterialTheme.typography.bodyMedium.copy(Color.Black)
+                        )
+                        distinctResults.forEach {
+                            ShowComponent(it.key.replace(Regex("[0-9]"), "").replace(",", ""))
                         }
                     } else {
                         Text(
@@ -157,17 +164,18 @@ fun MainScreen() {
             else if(galleryResult.value != null) {
                 val mutableUriToImageBitmap = mutableStateOf(loadImageFromUri(context, galleryResult.value))
                 val objectDetectionResults = runObjectDetection(context, mutableUriToImageBitmap.value)
-
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     ShowImage(loadImageFromUri(LocalContext.current, galleryResult.value), selectImage)
                     Spacer(modifier = Modifier.height(10.dp))
                     if(objectDetectionResults.isNotEmpty()) {
-                        val distinctResults = objectDetectionResults.distinct()
-                        println(distinctResults)
-                        distinctResults.forEach { 
-                            Text(text = it.text)
+                        val distinctResults = objectDetectionResults.groupBy { it.text }
+                        Text(
+                            text = stringResource(id = R.string.component_result),
+                            style = MaterialTheme.typography.bodyMedium.copy(Color.Black)
+                        )
+                        distinctResults.forEach {
+                            ShowComponent(it.key.replace(Regex("[0-9]"), "").replace(",", ""))
                         }
-
                     } else {
                         Text(
                             text = stringResource(id = R.string.no_result),
